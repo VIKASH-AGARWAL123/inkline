@@ -22,6 +22,23 @@ export async function getUserPosts(req, res) {
   }
 }
 
+export async function searchUsers(req, res) {
+  try {
+    const q = (req.query.q || '').trim()
+    if (!q) return res.json([])
+
+    const users = await User.find({
+      $or: [{ name: { $regex: q, $options: 'i' } }, { username: { $regex: q, $options: 'i' } }],
+    })
+      .select('-password')
+      .limit(20)
+
+    res.json(users)
+  } catch (err) {
+    res.status(500).json({ message: 'Search failed.', error: err.message })
+  }
+}
+
 export async function toggleFollow(req, res) {
   try {
     if (req.params.id === req.user._id.toString()) {

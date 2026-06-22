@@ -2,10 +2,40 @@ import Post from '../models/Post.js'
 
 export async function getPosts(req, res) {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 }).populate('author', 'name username')
-    res.json(posts)
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1)
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50)
+    const skip = (page - 1) * limit
+
+    const [posts, total] = await Promise.all([
+      Post.find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('author', 'name username'),
+      Post.countDocuments(),
+    ])
+
+    res.json({ posts, page, hasMore: skip + posts.length < total })
   } catch (err) {
     res.status(500).json({ message: 'Could not load posts.', error: err.message })
+  }
+}
+
+export async function searchPosts(req, res) {
+  try {
+    const q = (req.query.q || '').trim()
+    if (!q) return res.json([])
+
+    const posts = await Post.find({
+      $or: [{ title: { $regex: q, $options: 'i' } }, { content: { $regex: q, $options: 'i' } }],
+    })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .populate('author', 'name username')
+
+    res.json(posts)
+  } catch (err) {
+    res.status(500).json({ message: 'Search failed.', error: err.message })
   }
 }
 
@@ -16,7 +46,8 @@ export async function createPost(req, res) {
       return res.status(400).json({ message: 'Title and content are required.' })
     }
 
-    const post = await Post.create({ title, content, author: req.user._id })
+    const image = req.file ? `/uploads/${req.file.filename}` : null
+    const post = await Post.create({ title, content, image, author: req.user._id })
     await post.populate('author', 'name username')
 
     res.status(201).json(post)
