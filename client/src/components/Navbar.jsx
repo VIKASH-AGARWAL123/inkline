@@ -1,5 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import SearchBar from './SearchBar'
+import ThemeToggle from './ThemeToggle'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -12,11 +14,13 @@ export default function Navbar() {
 
   return (
     <header className="border-b border-border bg-paper sticky top-0 z-10">
-      <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="font-display font-bold text-xl tracking-tight">
+      <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        <Link to="/" className="font-display font-bold text-xl tracking-tight shrink-0">
           Inkline
         </Link>
+        <SearchBar />
         <nav className="flex items-center gap-5 font-mono text-sm">
+          <ThemeToggle />
           {user ? (
             <>
               <Link to="/create" className="hover:text-accent transition-colors">

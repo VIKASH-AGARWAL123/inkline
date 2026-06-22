@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { getImageUrl } from '../utils/getImageUrl'
 
 export default function PostDetail() {
   const { id } = useParams()
@@ -47,6 +48,13 @@ export default function PostDetail() {
         @{post.author?.username} · {new Date(post.createdAt).toLocaleDateString()}
       </div>
       <h1 className="font-display text-3xl font-bold mb-6">{post.title}</h1>
+      {post.image && (
+        <img
+          src={getImageUrl(post.image)}
+          alt=""
+          className="w-full max-h-96 object-cover rounded-md border border-border mb-8"
+        />
+      )}
       <div className="font-serif text-lg leading-relaxed whitespace-pre-wrap mb-8">{post.content}</div>
 
       <button
@@ -67,7 +75,7 @@ export default function PostDetail() {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Add a comment"
-              className="flex-1 border border-border rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-accent"
+              className="flex-1 border border-border rounded-md px-3 py-2 bg-surface focus:outline-none focus:ring-2 focus:ring-accent"
             />
             <button
               type="submit"

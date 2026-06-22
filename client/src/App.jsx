@@ -7,6 +7,7 @@ import Register from './pages/Register'
 import Profile from './pages/Profile'
 import PostDetail from './pages/PostDetail'
 import CreatePost from './pages/CreatePost'
+import SearchResults from './pages/SearchResults'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/post/:id" element={<PostDetail />} />
         <Route path="/profile/:id" element={<Profile />} />
+        <Route path="/search" element={<SearchResults />} />
         <Route
           path="/create"
           element={

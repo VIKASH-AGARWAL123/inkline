@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { getImageUrl } from '../utils/getImageUrl'
 
 export default function PostCard({ post }) {
   const date = new Date(post.createdAt).toLocaleDateString('en-US', {
@@ -14,14 +15,23 @@ export default function PostCard({ post }) {
         <span>·</span>
         <span>{date}</span>
       </div>
-      <Link to={`/post/${post._id}`}>
-        <h2 className="font-display text-2xl font-bold mb-2 hover:text-accent transition-colors">
-          {post.title}
-        </h2>
+      <Link to={`/post/${post._id}`} className="flex gap-4 items-start">
+        <div className="flex-1 min-w-0">
+          <h2 className="font-display text-2xl font-bold mb-2 hover:text-accent transition-colors">
+            {post.title}
+          </h2>
+          <p className="font-serif text-ink/80 leading-relaxed line-clamp-3">
+            {post.excerpt || post.content}
+          </p>
+        </div>
+        {post.image && (
+          <img
+            src={getImageUrl(post.image)}
+            alt=""
+            className="w-24 h-24 object-cover rounded-md border border-border shrink-0"
+          />
+        )}
       </Link>
-      <p className="font-serif text-ink/80 leading-relaxed line-clamp-3">
-        {post.excerpt || post.content}
-      </p>
       <div className="flex items-center gap-4 mt-3 font-mono text-xs text-muted">
         <span>{post.likes?.length || 0} likes</span>
         <span>{post.comments?.length || 0} comments</span>

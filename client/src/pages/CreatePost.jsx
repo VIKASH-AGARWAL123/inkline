@@ -5,16 +5,35 @@ import api from '../services/api'
 export default function CreatePost() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [image, setImage] = useState(null)
+  const [preview, setPreview] = useState(null)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const navigate = useNavigate()
+
+  function handleImageChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImage(file)
+    setPreview(URL.createObjectURL(file))
+  }
+
+  function clearImage() {
+    setImage(null)
+    setPreview(null)
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
     setSubmitting(true)
     try {
-      const res = await api.post('/posts', { title, content })
+      const formData = new FormData()
+      formData.append('title', title)
+      formData.append('content', content)
+      if (image) formData.append('image', image)
+
+      const res = await api.post('/posts', formData)
       navigate(`/post/${res.data._id}`)
     } catch (err) {
       setError(err.response?.data?.message || 'Could not publish your post.')
@@ -40,8 +59,34 @@ export default function CreatePost() {
           placeholder="Tell your story…"
           required
           rows={14}
-          className="w-full font-serif text-lg leading-relaxed border border-border rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+          className="w-full font-serif text-lg leading-relaxed border border-border rounded-md px-3 py-2 bg-surface focus:outline-none focus:ring-2 focus:ring-accent resize-none"
         />
+
+        <div>
+          <label className="block font-mono text-xs uppercase tracking-wide text-muted mb-2">
+            Cover image (optional)
+          </label>
+          {preview ? (
+            <div className="relative inline-block">
+              <img src={preview} alt="Selected cover" className="max-h-56 rounded-md border border-border" />
+              <button
+                type="button"
+                onClick={clearImage}
+                className="absolute top-2 right-2 bg-ink/80 text-paper text-xs font-mono px-2 py-1 rounded-md hover:bg-ink"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="font-mono text-sm text-muted file:mr-3 file:font-mono file:text-sm file:bg-ink file:text-paper file:border-0 file:rounded-md file:px-3 file:py-1.5 file:cursor-pointer hover:file:bg-accent"
+            />
+          )}
+        </div>
+
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
