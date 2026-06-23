@@ -16,6 +16,7 @@ import Inbox from "./pages/Inbox";
 import Conversation from "./pages/Conversation";
 
 export default function App() {
+  console.log(import.meta.env.VITE_API_URL);
   return (
     <SocketProvider>
       <div className="min-h-screen bg-paper text-ink">
