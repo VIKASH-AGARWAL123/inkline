@@ -81,7 +81,7 @@ export default function Navbar() {
                 to={`/profile/${user._id}`}
                 className="flex items-center gap-2 hover:text-accent transition-colors"
               >
-                <Avatar user={user} size="sm" />
+                <Avatar user={user} size="sm" showOnline />
                 <span className="hidden sm:inline">@{user.username}</span>
               </Link>
               <button

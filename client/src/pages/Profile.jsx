@@ -66,7 +66,7 @@ export default function Profile() {
       {/* Profile header */}
       <div className="flex items-start justify-between mb-8 gap-4">
         <div className="flex items-center gap-4">
-          <Avatar user={profile} size="xl" />
+          <Avatar user={profile} size="xl" showOnline />
           <div>
             <h1 className="font-display text-2xl font-bold">{profile.name}</h1>
             <p className="font-mono text-sm text-muted">@{profile.username}</p>

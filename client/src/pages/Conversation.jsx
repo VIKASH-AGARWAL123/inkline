@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { getImageUrl } from "../utils/getImageUrl";
 import Avatar from "../components/Avatar";
+import { useIsOnline } from "../context/OnlineContext";
 
 export default function Conversation() {
   const { userId } = useParams();
@@ -22,6 +23,8 @@ export default function Conversation() {
   const typingTimeout = useRef(null);
   const fileRef = useRef(null);
 
+  const isOtherOnline = useIsOnline(userId);
+  
   useEffect(() => {
     api.get(`/users/${userId}`).then((res) => setOtherUser(res.data));
   }, [userId]);
@@ -167,10 +170,18 @@ export default function Conversation() {
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </Link>
-        <Avatar user={otherUser} size="sm" />
+        <Avatar user={otherUser} size="sm" showOnline />
         <div>
           <p className="font-display font-bold text-sm">{otherUser?.name}</p>
           <p className="font-mono text-xs text-muted">@{otherUser?.username}</p>
+          <p
+            className={`font-mono text-xs flex items-center gap-1 ${isOtherOnline ? "text-green-500" : "text-muted"}`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${isOtherOnline ? "bg-green-500" : "bg-muted"}`}
+            />
+            {isOtherOnline ? "Online" : "Offline"}
+          </p>
         </div>
         <Link
           to={`/profile/${userId}`}

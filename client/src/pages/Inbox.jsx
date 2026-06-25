@@ -51,7 +51,7 @@ export default function Inbox() {
                 className="flex items-center gap-3 px-4 py-3 rounded-md hover:bg-surface border border-transparent hover:border-border transition-colors"
               >
                 {/* Avatar initial */}
-                <Avatar user={other} size="md" />
+                <Avatar user={other} size="md" showOnline />
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-2">
