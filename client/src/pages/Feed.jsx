@@ -1,72 +1,96 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import api from '../services/api'
-import PostCard from '../components/PostCard'
+import { useState, useEffect, useRef, useCallback } from "react";
+import api from "../services/api";
+import PostCard from "../components/PostCard";
+import TopicBar from "../components/TopicBar";
 
 export default function Feed() {
-  const [posts, setPosts] = useState([])
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
-  const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [error, setError] = useState('')
-  const sentinelRef = useRef(null)
+  const [posts, setPosts] = useState([]);
+  const [topic, setTopic] = useState("all");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState("");
+  const sentinelRef = useRef(null);
+
+  function loadFirst(t) {
+    setLoading(true);
+    setError("");
+    api
+      .get("/posts", { params: { page: 1, topic: t } })
+      .then((res) => {
+        setPosts(res.data.posts);
+        setHasMore(res.data.hasMore);
+        setPage(1);
+      })
+      .catch(() => setError("Could not load the feed."))
+      .finally(() => setLoading(false));
+  }
 
   useEffect(() => {
-    api
-      .get('/posts', { params: { page: 1 } })
-      .then((res) => {
-        setPosts(res.data.posts)
-        setHasMore(res.data.hasMore)
-        setPage(1)
-      })
-      .catch(() => setError('Could not load the feed right now.'))
-      .finally(() => setLoading(false))
-  }, [])
+    loadFirst(topic);
+  }, [topic]);
 
   const loadMore = useCallback(() => {
-    if (loadingMore || !hasMore) return
-    setLoadingMore(true)
-    const nextPage = page + 1
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const next = page + 1;
     api
-      .get('/posts', { params: { page: nextPage } })
+      .get("/posts", { params: { page: next, topic } })
       .then((res) => {
-        setPosts((prev) => [...prev, ...res.data.posts])
-        setHasMore(res.data.hasMore)
-        setPage(nextPage)
+        setPosts((prev) => [...prev, ...res.data.posts]);
+        setHasMore(res.data.hasMore);
+        setPage(next);
       })
-      .finally(() => setLoadingMore(false))
-  }, [page, hasMore, loadingMore])
+      .finally(() => setLoadingMore(false));
+  }, [page, hasMore, loadingMore, topic]);
 
   useEffect(() => {
-    if (!sentinelRef.current) return
+    if (!sentinelRef.current) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) loadMore()
+        if (entries[0].isIntersecting) loadMore();
       },
-      { rootMargin: '200px' }
-    )
-    observer.observe(sentinelRef.current)
-    return () => observer.disconnect()
-  }, [loadMore])
-
-  if (loading) return <p className="text-center text-muted py-16 font-serif">Loading posts…</p>
-  if (error) return <p className="text-center text-red-600 py-16">{error}</p>
+      { rootMargin: "200px" },
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [loadMore]);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="font-display text-2xl font-bold mb-6">Latest</h1>
-      {posts.length === 0 ? (
-        <p className="text-muted font-serif">No posts yet. Be the first to write something.</p>
-      ) : (
-        posts.map((post) => <PostCard key={post._id} post={post} />)
+      <TopicBar active={topic} onChange={(t) => setTopic(t)} />
+      {loading && (
+        <p className="text-center text-muted py-16 font-serif">
+          Loading posts…
+        </p>
       )}
+      {error && <p className="text-center text-red-600 py-16">{error}</p>}
+      {!loading && posts.length === 0 && (
+        <p className="text-muted font-serif text-center py-8">
+          No posts in this topic yet.
+        </p>
+      )}
+      {posts.map((post) => (
+        <PostCard
+          key={post._id}
+          post={post}
+          onDelete={(id) =>
+            setPosts((prev) => prev.filter((p) => p._id !== id))
+          }
+        />
+      ))}
       <div ref={sentinelRef} />
-      {loadingMore && <p className="text-center text-muted py-6 font-mono text-sm">Loading more…</p>}
+      {loadingMore && (
+        <p className="text-center text-muted py-6 font-mono text-sm">
+          Loading more…
+        </p>
+      )}
       {!hasMore && posts.length > 0 && (
         <p className="text-center text-muted py-6 font-mono text-xs uppercase tracking-wide">
           You've reached the end
         </p>
       )}
     </div>
-  )
+  );
 }

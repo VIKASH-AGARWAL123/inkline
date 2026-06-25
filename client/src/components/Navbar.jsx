@@ -3,6 +3,8 @@ import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import SearchBar from "./SearchBar";
 import ThemeToggle from "./ThemeToggle";
+import NotificationBell from "./NotificationBell";
+import Avatar from "./Avatar";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -28,7 +30,8 @@ export default function Navbar() {
           <ThemeToggle />
           {user ? (
             <>
-              {/* Inbox with unread badge */}
+              <NotificationBell />
+              {/* Inbox */}
               <Link
                 to="/inbox"
                 className="relative hover:text-accent transition-colors"
@@ -51,6 +54,23 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
+              {/* Bookmarks */}
+              <Link
+                to="/bookmarks"
+                className="hover:text-accent transition-colors"
+                aria-label="Bookmarks"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                </svg>
+              </Link>
               <Link
                 to="/create"
                 className="hover:text-accent transition-colors"
@@ -59,9 +79,10 @@ export default function Navbar() {
               </Link>
               <Link
                 to={`/profile/${user._id}`}
-                className="hover:text-accent transition-colors"
+                className="flex items-center gap-2 hover:text-accent transition-colors"
               >
-                @{user.username}
+                <Avatar user={user} size="sm" />
+                <span className="hidden sm:inline">@{user.username}</span>
               </Link>
               <button
                 onClick={handleLogout}

@@ -1,49 +1,51 @@
-import { createContext, useState, useEffect, useContext } from 'react'
-import api from '../services/api'
+import { createContext, useState, useEffect, useContext } from "react";
+import api from "../services/api";
 
-const AuthContext = createContext(null)
+const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem("token");
     if (!token) {
-      setLoading(false)
-      return
+      setLoading(false);
+      return;
     }
     api
-      .get('/auth/me')
+      .get("/auth/me")
       .then((res) => setUser(res.data))
-      .catch(() => localStorage.removeItem('token'))
-      .finally(() => setLoading(false))
-  }, [])
+      .catch(() => localStorage.removeItem("token"))
+      .finally(() => setLoading(false));
+  }, []);
 
   async function login(email, password) {
-    const res = await api.post('/auth/login', { email, password })
-    localStorage.setItem('token', res.data.token)
-    setUser(res.data.user)
+    const res = await api.post("/auth/login", { email, password });
+    localStorage.setItem("token", res.data.token);
+    setUser(res.data.user);
   }
 
   async function register(name, email, password) {
-    const res = await api.post('/auth/register', { name, email, password })
-    localStorage.setItem('token', res.data.token)
-    setUser(res.data.user)
+    const res = await api.post("/auth/register", { name, email, password });
+    localStorage.setItem("token", res.data.token);
+    setUser(res.data.user);
   }
 
   function logout() {
-    localStorage.removeItem('token')
-    setUser(null)
+    localStorage.removeItem("token");
+    setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, setUser, loading, login, register, logout }}
+    >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  return useContext(AuthContext)
+  return useContext(AuthContext);
 }
