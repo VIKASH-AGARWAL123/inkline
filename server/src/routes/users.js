@@ -11,6 +11,7 @@ import { uploadAvatar } from "../middleware/uploadAvatar.js";
 
 const router = express.Router();
 
+// ⚠️ Static routes MUST come before /:id routes
 router.get("/search", searchUsers);
 router.put(
   "/me/profile",
@@ -18,6 +19,8 @@ router.put(
   uploadAvatar.single("avatar"),
   updateProfile,
 );
+
+// Dynamic :id routes below
 router.get("/:id", getUser);
 router.get("/:id/posts", getUserPosts);
 router.post("/:id/follow", protect, toggleFollow);
