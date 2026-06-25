@@ -1,8 +1,20 @@
 import Message from '../models/Message.js'
 
+// Track online users: Map<userId, socketId>
+const onlineUsers = new Map()
+
+export function getOnlineUsers() {
+  return Array.from(onlineUsers.keys())
+}
+
 export function registerSocketHandlers(io, socket) {
   const me = socket.user
   socket.join(`user:${me._id}`)
+
+  // Mark user online and broadcast to everyone
+  onlineUsers.set(String(me._id), socket.id)
+  io.emit('online_users', Array.from(onlineUsers.keys()))
+  console.log(`Socket connected: ${me.username} | Online: ${onlineUsers.size}`)
 
   socket.on('join_conversation', async ({ withUserId }) => {
     try {
@@ -13,7 +25,10 @@ export function registerSocketHandlers(io, socket) {
         .populate('sender', 'name username avatar')
         .populate('receiver', 'name username avatar')
       socket.emit('message_history', history)
-      await Message.updateMany({ conversationId: convId, receiver: me._id, read: false }, { read: true })
+      await Message.updateMany(
+        { conversationId: convId, receiver: me._id, read: false },
+        { read: true }
+      )
     } catch {
       socket.emit('error', { message: 'Could not load conversation.' })
     }
@@ -51,5 +66,11 @@ export function registerSocketHandlers(io, socket) {
   socket.on('stop_typing', ({ toUserId }) => {
     const convId = Message.makeConversationId(me._id, toUserId)
     socket.to(`conv:${convId}`).emit('user_stop_typing', { userId: me._id })
+  })
+
+  socket.on('disconnect', () => {
+    onlineUsers.delete(String(me._id))
+    io.emit('online_users', Array.from(onlineUsers.keys()))
+    console.log(`Socket disconnected: ${me.username} | Online: ${onlineUsers.size}`)
   })
 }

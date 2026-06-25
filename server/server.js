@@ -12,7 +12,10 @@ import userRoutes from "./src/routes/users.js";
 import messageRoutes from "./src/routes/messages.js";
 import notificationRoutes from "./src/routes/notifications.js";
 import { socketAuth } from "./src/socket/socketAuth.js";
-import { registerSocketHandlers } from "./src/socket/socketHandler.js";
+import {
+  registerSocketHandlers,
+  getOnlineUsers,
+} from "./src/socket/socketHandler.js";
 
 connectDB();
 
@@ -35,8 +38,6 @@ app.use(
 );
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
-
-// Attach io to every request so controllers can emit notifications
 app.use((req, res, next) => {
   req.io = io;
   next();
@@ -48,6 +49,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
 
+// REST endpoint to get currently online user IDs on initial page load
+app.get("/api/online-users", (req, res) => res.json(getOnlineUsers()));
+
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 app.use((req, res) => res.status(404).json({ message: "Route not found." }));
 app.use((err, req, res, next) => {
@@ -57,7 +61,6 @@ app.use((err, req, res, next) => {
 
 io.use(socketAuth);
 io.on("connection", (socket) => {
-  console.log(`Socket connected: ${socket.user.username}`);
   registerSocketHandlers(io, socket);
 });
 

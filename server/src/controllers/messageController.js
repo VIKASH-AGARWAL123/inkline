@@ -36,7 +36,7 @@ export async function getInbox(req, res) {
           String(conv.lastMessage.sender) === String(userId)
             ? conv.lastMessage.receiver
             : conv.lastMessage.sender;
-        const other = await User.findById(otherId).select("name username");
+        const other = await User.findById(otherId).select("name username avatar");
         return { ...conv, otherUser: other };
       }),
     );

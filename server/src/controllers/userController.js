@@ -122,3 +122,21 @@ export async function updateProfile(req, res) {
       .json({ message: "Could not update profile.", error: err.message });
   }
 }
+
+export async function getSuggestions(req, res) {
+  try {
+    const me = await User.findById(req.user._id).select("following");
+    const exclude = [...(me.following || []), req.user._id];
+
+    const suggestions = await User.find({ _id: { $nin: exclude } })
+      .select("name username avatar bio followers")
+      .limit(6)
+      .sort({ createdAt: -1 });
+
+    res.json(suggestions);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Could not load suggestions.", error: err.message });
+  }
+}
